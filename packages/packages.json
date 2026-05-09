@@ -1,0 +1,22 @@
+{
+  "name": "example",
+  "description": "An example package entry for reference",
+  "author": "yourname",
+  "repo": "yourname/sk-example",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": ">=2.8.0",
+      "minecraft": ">=1.20",
+      "addons": {
+        "SkBee": ">=2.10.0"
+      },
+      "files": [
+        {
+          "name": "example.sk",
+          "url": "https://github.com/yourname/sk-example/releases/download/v1.0.0/example.sk"
+        }
+      ]
+    }
+  }
+}
