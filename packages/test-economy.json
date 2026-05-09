@@ -1,0 +1,19 @@
+{
+  "name": "test-economy",
+  "description": "A test economy package",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.8.0",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "economy.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/test-economy/1.0.0/economy.sk"
+        }
+      ]
+    }
+  }
+}
