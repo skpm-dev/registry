@@ -1,4 +1,11 @@
 {
   "version": "1",
-  "packages": []
+  "packages": [
+    {
+      "name": "test-economy",
+      "description": "A test economy package",
+      "author": "adammcgrogan",
+      "latest": "1.0.0"
+    }
+  ]
 }
