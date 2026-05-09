@@ -1,32 +1,19 @@
 package handlers
 
 import (
-	"database/sql"
+	"fmt"
 	"net/http"
-
-	"github.com/skpm-dev/registry/internal/db"
 )
 
-func DownloadFile(database *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.PathValue("name")
-		version := r.PathValue("version")
-		filename := r.PathValue("filename")
+const rawBase = "https://raw.githubusercontent.com/skpm-dev/registry/main"
 
-		content, err := db.GetFile(database, name, version, filename)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not fetch file")
-			return
-		}
+// DownloadFile redirects to the raw GitHub URL for the file.
+// Files are only available after the publish PR has been merged.
+func DownloadFile(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	version := r.PathValue("version")
+	filename := r.PathValue("filename")
 
-		if content == "" {
-			writeError(w, http.StatusNotFound, "file not found")
-			return
-		}
-
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(content))
-	}
+	url := fmt.Sprintf("%s/files/%s/%s/%s", rawBase, name, version, filename)
+	http.Redirect(w, r, url, http.StatusFound)
 }

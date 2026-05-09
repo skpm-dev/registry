@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/skpm-dev/registry/internal/db"
 	"github.com/skpm-dev/registry/internal/server"
 )
 
@@ -15,18 +14,11 @@ func main() {
 		port = "8080"
 	}
 
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "skpm.db"
+	if os.Getenv("REGISTRY_GITHUB_TOKEN") == "" {
+		log.Fatal("REGISTRY_GITHUB_TOKEN is not set")
 	}
 
-	database, err := db.Open(dbPath)
-	if err != nil {
-		log.Fatalf("could not open database: %v", err)
-	}
-	defer database.Close()
-
-	srv := server.New(database, port)
+	srv := server.New(port)
 
 	fmt.Printf("skpm registry running on port %s\n", port)
 	if err := srv.ListenAndServe(); err != nil {
