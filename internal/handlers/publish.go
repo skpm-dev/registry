@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/skpm-dev/registry/internal/github"
+	"github.com/skpm-dev/registry/internal/models"
 	"github.com/skpm-dev/registry/internal/store"
 )
 
@@ -72,17 +73,16 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 		filenames = append(filenames, name)
 	}
 
-	pkg := store.BuildPackageEntry(
-		existing,
-		req.Manifest.Name,
-		req.Manifest.Description,
-		user.Login,
-		req.Manifest.Version,
-		req.Manifest.Skript,
-		req.Manifest.Minecraft,
-		req.Manifest.Addons,
-		filenames,
-	)
+	pkg := store.BuildPackageEntry(existing, store.PublishParams{
+		Name:        req.Manifest.Name,
+		Description: req.Manifest.Description,
+		Author:      user.Login,
+		Version:     req.Manifest.Version,
+		Skript:      req.Manifest.Skript,
+		Minecraft:   req.Manifest.Minecraft,
+		Addons:      req.Manifest.Addons,
+		Filenames:   filenames,
+	})
 
 	updatedIndex := store.BuildUpdatedIndex(index, pkg)
 
@@ -98,7 +98,7 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func openPublishPR(req publishRequest, pkg interface{}, updatedIndex interface{}, author string) (string, error) {
+func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.Index, author string) (string, error) {
 	registryToken := os.Getenv("REGISTRY_GITHUB_TOKEN")
 	if registryToken == "" {
 		return "", fmt.Errorf("REGISTRY_GITHUB_TOKEN is not set")

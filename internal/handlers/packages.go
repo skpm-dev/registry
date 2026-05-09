@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/skpm-dev/registry/internal/models"
 	"github.com/skpm-dev/registry/internal/store"
 )
 
@@ -34,7 +36,7 @@ func ListPackages(w http.ResponseWriter, r *http.Request) {
 }
 
 func SearchPackages(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("q")
+	query := strings.ToLower(r.URL.Query().Get("q"))
 	if query == "" {
 		writeError(w, http.StatusBadRequest, "missing query parameter q")
 		return
@@ -46,24 +48,12 @@ func SearchPackages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var results []interface{}
+	var results []models.PackageSummary
 	for _, p := range all {
-		if contains(p.Name, query) || contains(p.Description, query) {
+		if strings.Contains(strings.ToLower(p.Name), query) || strings.Contains(strings.ToLower(p.Description), query) {
 			results = append(results, p)
 		}
 	}
 
 	writeJSON(w, http.StatusOK, results)
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
-		func() bool {
-			for i := 0; i <= len(s)-len(substr); i++ {
-				if s[i:i+len(substr)] == substr {
-					return true
-				}
-			}
-			return false
-		}())
 }

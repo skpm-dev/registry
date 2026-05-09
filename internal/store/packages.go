@@ -93,27 +93,38 @@ func BuildUpdatedIndex(index *Index, pkg *models.Package) *Index {
 	return index
 }
 
+type PublishParams struct {
+	Name        string
+	Description string
+	Author      string
+	Version     string
+	Skript      string
+	Minecraft   string
+	Addons      map[string]string
+	Filenames   []string
+}
+
 // BuildPackageEntry creates a new package entry or merges a new version into an existing one.
-func BuildPackageEntry(existing *models.Package, name, description, author, version, skript, minecraft string, addons map[string]string, filenames []string) *models.Package {
+func BuildPackageEntry(existing *models.Package, p PublishParams) *models.Package {
 	versionEntry := models.VersionEntry{
-		Skript:    skript,
-		Minecraft: minecraft,
-		Addons:    addons,
-		Files:     buildFileEntries(name, version, filenames),
+		Skript:    p.Skript,
+		Minecraft: p.Minecraft,
+		Addons:    p.Addons,
+		Files:     buildFileEntries(p.Name, p.Version, p.Filenames),
 	}
 
 	if existing == nil {
 		return &models.Package{
-			Name:        name,
-			Description: description,
-			Author:      author,
-			Latest:      version,
-			Versions:    map[string]models.VersionEntry{version: versionEntry},
+			Name:        p.Name,
+			Description: p.Description,
+			Author:      p.Author,
+			Latest:      p.Version,
+			Versions:    map[string]models.VersionEntry{p.Version: versionEntry},
 		}
 	}
 
-	existing.Latest = version
-	existing.Versions[version] = versionEntry
+	existing.Latest = p.Version
+	existing.Versions[p.Version] = versionEntry
 	return existing
 }
 

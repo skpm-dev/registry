@@ -94,7 +94,7 @@ func (c *RepoClient) CreateBranch(name, fromSHA string) error {
 		"sha": fromSHA,
 	}
 
-	if err := c.post(url, body, http.StatusCreated); err != nil {
+	if err := c.doRequest(http.MethodPost, url, body, http.StatusCreated); err != nil {
 		return fmt.Errorf("could not create branch %s: %w", name, err)
 	}
 
@@ -120,7 +120,7 @@ func (c *RepoClient) CommitFile(branch, path, content, message string) error {
 		body["sha"] = existingSHA
 	}
 
-	if err := c.put(url, body, http.StatusOK, http.StatusCreated); err != nil {
+	if err := c.doRequest(http.MethodPut, url, body, http.StatusOK, http.StatusCreated); err != nil {
 		return fmt.Errorf("could not commit %s: %w", path, err)
 	}
 
@@ -174,37 +174,7 @@ func (c *RepoClient) setHeaders(req *http.Request) {
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 }
 
-func (c *RepoClient) post(url string, body map[string]string, expectedStatus int) error {
-	return c.writeRequest(http.MethodPost, url, body, expectedStatus, expectedStatus)
-}
-
-func (c *RepoClient) put(url string, body map[string]string, expectedStatuses ...int) error {
-	data, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	req, _ := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
-	c.setHeaders(req)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	for _, s := range expectedStatuses {
-		if resp.StatusCode == s {
-			return nil
-		}
-	}
-
-	b, _ := io.ReadAll(resp.Body)
-	return fmt.Errorf("github returned %d: %s", resp.StatusCode, string(b))
-}
-
-func (c *RepoClient) writeRequest(method, url string, body map[string]string, expectedStatuses ...int) error {
+func (c *RepoClient) doRequest(method, url string, body map[string]string, expectedStatuses ...int) error {
 	data, err := json.Marshal(body)
 	if err != nil {
 		return err
