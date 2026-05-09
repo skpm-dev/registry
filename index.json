@@ -6,6 +6,12 @@
       "description": "A test economy package",
       "author": "adammcgrogan",
       "latest": "1.0.0"
+    },
+    {
+      "name": "join-message",
+      "description": "A simple join message system for Skript servers",
+      "author": "tarna",
+      "latest": "1.0.0"
     }
   ]
 }
