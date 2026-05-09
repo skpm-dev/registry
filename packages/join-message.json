@@ -1,0 +1,19 @@
+{
+  "name": "join-message",
+  "description": "A simple join message system for Skript servers",
+  "author": "tarna",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.8.0",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "join-message.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/join-message/1.0.0/join-message.sk"
+        }
+      ]
+    }
+  }
+}
