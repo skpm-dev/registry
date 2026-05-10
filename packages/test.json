@@ -30,5 +30,5 @@
     }
   },
   "removed": true,
-  "remove_reason": "contains malicious code"
+  "remove_reason": "malicious"
 }
