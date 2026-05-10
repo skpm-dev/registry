@@ -2,7 +2,7 @@
   "name": "broadcast",
   "description": "Easy Broadcast",
   "author": "adammcgrogan",
-  "latest": "1.0.1",
+  "latest": "1.0.2",
   "versions": {
     "1.0.0": {
       "skript": "\u003e=2.7",
@@ -14,7 +14,8 @@
           "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/broadcast/1.0.0/broadcast.sk",
           "sha256": "sha256:5494665a78c212a3ba779b4cb4308a7c031cd5f76ec64ea24af8ff912fa2cb25"
         }
-      ]
+      ],
+      "downloads": 0
     },
     "1.0.1": {
       "skript": "\u003e=2.7",
@@ -26,7 +27,21 @@
           "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/broadcast/1.0.1/broadcast.sk",
           "sha256": "sha256:b75b723ba28fb7b467c00d0998f7539554f31aec023f00cd03657e2113ff4c9b"
         }
-      ]
+      ],
+      "downloads": 0
+    },
+    "1.0.2": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "broadcast.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/broadcast/1.0.2/broadcast.sk",
+          "sha256": "sha256:5050812da5fa55eccbde8b16522485db584e63adaa8a97afe13e69b5c33a509c"
+        }
+      ],
+      "downloads": 0
     }
   },
   "downloads": 0
