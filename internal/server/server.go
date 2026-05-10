@@ -28,9 +28,24 @@ func New(port string) *http.Server {
 	}
 }
 
+var allowedOrigins = map[string]bool{
+	"https://skpm.org":       true,
+	"https://www.skpm.org":   true,
+	"http://localhost:8000":  true,
+	"http://localhost:3000":  true,
+	"http://localhost:5173":  true,
+	"http://127.0.0.1:8000":  true,
+	"http://127.0.0.1:3000":  true,
+	"http://127.0.0.1:5173":  true,
+}
+
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "https://skpm.org")
+		origin := r.Header.Get("Origin")
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 		if r.Method == http.MethodOptions {
