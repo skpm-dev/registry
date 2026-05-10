@@ -1,12 +1,36 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/skpm-dev/registry/internal/models"
 	"github.com/skpm-dev/registry/internal/store"
 )
+
+func registryBase() string {
+	if base := os.Getenv("REGISTRY_BASE_URL"); base != "" {
+		return base
+	}
+	return "https://registry.skpm.org"
+}
+
+// rewriteFileURLs replaces raw GitHub file URLs with registry download endpoints
+// so every file download is counted.
+func rewriteFileURLs(pkg *models.Package) {
+	base := registryBase()
+	for version, entry := range pkg.Versions {
+		for i, f := range entry.Files {
+			if f.Name != "" {
+				entry.Files[i].URL = fmt.Sprintf("%s/packages/%s/versions/%s/files/%s",
+					base, pkg.Name, version, f.Name)
+			}
+		}
+		pkg.Versions[version] = entry
+	}
+}
 
 func GetPackage(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
@@ -31,6 +55,7 @@ func GetPackage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rewriteFileURLs(pkg)
 	pkg.Downloads = store.GetDownloads(name)
 	writeJSON(w, http.StatusOK, pkg)
 }
