@@ -1,0 +1,20 @@
+{
+  "name": "test",
+  "description": "test",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "example.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/test/1.0.0/example.sk",
+          "sha256": "sha256:72fd2fdde1b3c6079053b9a29ef17a55d1dab26435a358d66a6aebaa2f059c7b"
+        }
+      ]
+    }
+  }
+}
