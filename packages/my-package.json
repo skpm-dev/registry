@@ -1,0 +1,20 @@
+{
+  "name": "my-package",
+  "description": "A short description of your package",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "example.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/my-package/1.0.0/example.sk",
+          "sha256": "sha256:7f252fab05f32461350e2abc9f55f7cd61ce99fff6ebcd14c69b099dba4e6843"
+        }
+      ]
+    }
+  }
+}
