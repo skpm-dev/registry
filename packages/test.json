@@ -28,5 +28,7 @@
         }
       ]
     }
-  }
+  },
+  "removed": true,
+  "remove_reason": "contains malicious code"
 }
