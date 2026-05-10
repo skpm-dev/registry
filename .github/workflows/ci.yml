@@ -17,3 +17,11 @@ jobs:
           go-version-file: go.mod
 
       - run: go test ./...
+
+      - name: Trigger e2e
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.E2E_DISPATCH_TOKEN }}
+          repository: skpm-dev/e2e
+          event-type: run-e2e
