@@ -18,12 +18,6 @@
       "description": "Dedicated package for skpm end-to-end tests",
       "author": "adammcgrogan",
       "latest": "1.0.0"
-    },
-    {
-      "name": "test",
-      "description": "test",
-      "author": "adammcgrogan",
-      "latest": "2.0.0"
     }
   ]
 }
