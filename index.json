@@ -2,12 +2,6 @@
   "version": "1",
   "packages": [
     {
-      "name": "test-economy",
-      "description": "A test economy package",
-      "author": "adammcgrogan",
-      "latest": "1.0.0"
-    },
-    {
       "name": "join-message",
       "description": "A simple join message system for Skript servers",
       "author": "tarna",
@@ -18,6 +12,12 @@
       "description": "Dedicated package for skpm end-to-end tests",
       "author": "adammcgrogan",
       "latest": "1.0.0"
+    },
+    {
+      "name": "test",
+      "description": "test",
+      "author": "adammcgrogan",
+      "latest": "2.0.0"
     }
   ]
 }
