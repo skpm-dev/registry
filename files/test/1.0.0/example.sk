@@ -1,0 +1,5 @@
+command hello:
+    trigger:
+        send "hi"
+        send "hi again"
+        send "hi again 2"
