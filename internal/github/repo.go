@@ -103,6 +103,30 @@ func (c *RepoClient) CreateBranch(name, fromSHA string) error {
 	return nil
 }
 
+// HasOpenPR returns true if there is an open pull request for the given branch.
+func (c *RepoClient) HasOpenPR(branch string) (bool, error) {
+	url := fmt.Sprintf(
+		"https://api.github.com/repos/%s/%s/pulls?head=%s:%s&state=open",
+		c.owner, c.repo, c.owner, branch,
+	)
+
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	c.setHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	var prs []struct{}
+	if err := json.NewDecoder(resp.Body).Decode(&prs); err != nil {
+		return false, err
+	}
+
+	return len(prs) > 0, nil
+}
+
 // DeleteBranch deletes a branch.
 func (c *RepoClient) DeleteBranch(name string) error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs/heads/%s", c.owner, c.repo, name)

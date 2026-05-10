@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"github.com/skpm-dev/registry/internal/models"
 	"github.com/skpm-dev/registry/internal/store"
 )
+
+var errVersionConflict = errors.New("version already has an open pull request")
 
 type publishRequest struct {
 	Manifest publishManifest   `json:"manifest"`
@@ -91,6 +94,10 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 
 	prURL, err := openPublishPR(req, pkg, updatedIndex, user.Login)
 	if err != nil {
+		if errors.Is(err, errVersionConflict) {
+			writeError(w, http.StatusConflict, fmt.Sprintf("version %s already has an open pull request — bump your version and try again", req.Manifest.Version))
+			return
+		}
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("could not open PR: %v", err))
 		return
 	}
@@ -115,6 +122,12 @@ func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.
 	}
 
 	branch := fmt.Sprintf("publish/%s-%s", req.Manifest.Name, req.Manifest.Version)
+
+	if open, err := client.HasOpenPR(branch); err != nil {
+		return "", fmt.Errorf("could not check open PRs: %w", err)
+	} else if open {
+		return "", errVersionConflict
+	}
 
 	if err := client.CreateBranch(branch, mainSHA); err != nil {
 		return "", fmt.Errorf("could not create branch: %w", err)
