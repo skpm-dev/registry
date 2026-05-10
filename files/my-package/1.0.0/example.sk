@@ -1,4 +1,0 @@
-command hello:
-    trigger:
-        send "hi"
-        send "hi again"
