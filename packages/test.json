@@ -2,7 +2,7 @@
   "name": "test",
   "description": "test",
   "author": "adammcgrogan",
-  "latest": "1.0.0",
+  "latest": "2.0.0",
   "versions": {
     "1.0.0": {
       "skript": "\u003e=2.7",
@@ -13,6 +13,18 @@
           "name": "example.sk",
           "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/test/1.0.0/example.sk",
           "sha256": "sha256:4dace9b1ff06f3dcc55dd773d8d6ce3eb8001b0c6732909e2216ac3ab10bb76c"
+        }
+      ]
+    },
+    "2.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "example.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/test/2.0.0/example.sk",
+          "sha256": "sha256:b19fe11b746c87efdb8e7f0a204a3d533a3d1bbdb4a7156ea8cb0888023e6e7d"
         }
       ]
     }
