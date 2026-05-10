@@ -3,22 +3,26 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/skpm-dev/registry/internal/handlers"
+	"github.com/skpm-dev/registry/internal/middleware"
 )
 
 func New(port string) *http.Server {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /publish", handlers.Publish)
+	publishLimit := middleware.RateLimit(10, time.Minute)
+	mux.Handle("POST /publish", publishLimit(http.HandlerFunc(handlers.Publish)))
 	mux.HandleFunc("GET /packages", handlers.ListPackages)
 	mux.HandleFunc("GET /packages/{name}", handlers.GetPackage)
 	mux.HandleFunc("GET /packages/{name}/versions/{version}/files/{filename}", handlers.DownloadFile)
 	mux.HandleFunc("GET /search", handlers.SearchPackages)
 
+	globalLimit := middleware.RateLimit(120, time.Minute)
 	return &http.Server{
 		Addr:    fmt.Sprintf(":%s", port),
-		Handler: corsMiddleware(mux),
+		Handler: globalLimit(corsMiddleware(mux)),
 	}
 }
 
