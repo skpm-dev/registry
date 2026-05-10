@@ -11,6 +11,7 @@ type VersionEntry struct {
 	Minecraft  string            `json:"minecraft"`
 	Addons     map[string]string `json:"addons"`
 	Files      []FileEntry       `json:"files"`
+	Downloads  int64             `json:"downloads"`
 	Yanked     bool              `json:"yanked,omitempty"`
 	YankReason string            `json:"yank_reason,omitempty"`
 }

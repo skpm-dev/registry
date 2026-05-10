@@ -57,6 +57,10 @@ func GetPackage(w http.ResponseWriter, r *http.Request) {
 
 	rewriteFileURLs(pkg)
 	pkg.Downloads = store.GetDownloads(name)
+	for v, entry := range pkg.Versions {
+		entry.Downloads = store.GetVersionDownloads(name, v)
+		pkg.Versions[v] = entry
+	}
 	writeJSON(w, http.StatusOK, pkg)
 }
 

@@ -28,7 +28,7 @@ func DownloadFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	store.IncrementDownloads(name)
+	store.IncrementDownloads(name, version)
 
 	url := fmt.Sprintf("%s/files/%s/%s/%s", rawBase, name, version, filename)
 	http.Redirect(w, r, url, http.StatusFound)

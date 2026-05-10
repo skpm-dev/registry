@@ -19,11 +19,7 @@ func main() {
 		log.Fatal("REGISTRY_GITHUB_TOKEN is not set")
 	}
 
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "skpm.db"
-	}
-	store.InitDB(dbPath)
+	store.InitDB()
 
 	srv := server.New(port)
 
