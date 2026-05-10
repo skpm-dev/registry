@@ -11,7 +11,8 @@
       "files": [
         {
           "name": "join-message.sk",
-          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/join-message/1.0.0/join-message.sk"
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/join-message/1.0.0/join-message.sk",
+          "sha256": "sha256:32639c9849e23bddf48948f1496fca50408a6981d8ec9d137b44614e6291ddd3"
         }
       ]
     }
