@@ -85,8 +85,10 @@ func (c *RepoClient) GetBranchSHA(branch string) (string, error) {
 	return ref.Object.SHA, nil
 }
 
-// CreateBranch creates a new branch pointing at fromSHA.
+// CreateBranch creates a new branch pointing at fromSHA, deleting it first if it already exists.
 func (c *RepoClient) CreateBranch(name, fromSHA string) error {
+	_ = c.DeleteBranch(name) // ignore error — branch may not exist
+
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs", c.owner, c.repo)
 
 	body := map[string]string{
@@ -96,6 +98,27 @@ func (c *RepoClient) CreateBranch(name, fromSHA string) error {
 
 	if err := c.doRequest(http.MethodPost, url, body, http.StatusCreated); err != nil {
 		return fmt.Errorf("could not create branch %s: %w", name, err)
+	}
+
+	return nil
+}
+
+// DeleteBranch deletes a branch.
+func (c *RepoClient) DeleteBranch(name string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs/heads/%s", c.owner, c.repo, name)
+
+	req, _ := http.NewRequest(http.MethodDelete, url, nil)
+	c.setHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		b, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("github returned %d deleting branch %s: %s", resp.StatusCode, name, string(b))
 	}
 
 	return nil
