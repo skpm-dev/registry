@@ -27,6 +27,7 @@ jobs:
             description=$(echo "$pkg" | jq -r '.description // "No description"')
             author=$(echo "$pkg" | jq -r '.author')
             version=$(echo "$pkg" | jq -r '.latest')
+            url="https://skpm.org/package?name=${name}"
 
             # Determine new vs updated by checking if this file existed in the previous commit
             if git show HEAD~1:"$file" > /dev/null 2>&1; then
@@ -34,34 +35,36 @@ jobs:
               if [ "$prev_version" = "$version" ]; then
                 continue  # metadata-only change, not a version bump
               fi
-              title="Package updated"
+              title="📦 ${name} updated to v${version}"
               color=3447003  # blue
             else
-              title="New package published"
+              title="🎉 ${name} v${version} published"
               color=5763719  # green
             fi
 
             payload=$(jq -n \
               --arg title "$title" \
-              --arg name "$name" \
-              --arg version "$version" \
+              --arg url "$url" \
               --arg description "$description" \
               --arg author "$author" \
+              --arg version "$version" \
               --argjson color "$color" \
               '{
                 embeds: [{
-                  title: ($title),
+                  title: $title,
+                  url: $url,
+                  description: $description,
                   color: $color,
                   fields: [
-                    { name: "Package", value: $name, inline: true },
-                    { name: "Version", value: $version, inline: true },
                     { name: "Author", value: $author, inline: true },
-                    { name: "Description", value: $description, inline: false }
-                  ]
+                    { name: "Version", value: $version, inline: true }
+                  ],
+                  footer: { text: "skpm registry" },
+                  timestamp: (now | todate)
                 }]
               }')
 
-            curl -s -o /dev/null -w "%{http_code}" \
+            curl -s -o /dev/null \
               -H "Content-Type: application/json" \
               -d "$payload" \
               "$WEBHOOK"
