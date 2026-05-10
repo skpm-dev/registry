@@ -1,0 +1,2 @@
+[deploy]
+watchPatterns = ["**/*.go", "go.mod", "go.sum", "railway.toml"]
