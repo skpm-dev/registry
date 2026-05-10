@@ -12,6 +12,12 @@
       "description": "Dedicated package for skpm end-to-end tests",
       "author": "adammcgrogan",
       "latest": "1.0.0"
+    },
+    {
+      "name": "bot-test",
+      "description": "Testing bot token",
+      "author": "adammcgrogan",
+      "latest": "1.0.0"
     }
   ]
 }
