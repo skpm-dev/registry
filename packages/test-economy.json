@@ -11,9 +11,12 @@
       "files": [
         {
           "name": "economy.sk",
-          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/test-economy/1.0.0/economy.sk"
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/test-economy/1.0.0/economy.sk",
+          "sha256": ""
         }
       ]
     }
-  }
+  },
+  "removed": true,
+  "remove_reason": "contains malicious code"
 }
