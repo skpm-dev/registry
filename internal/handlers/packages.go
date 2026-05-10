@@ -22,6 +22,15 @@ func GetPackage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if pkg.Removed {
+		msg := "this package has been removed from the registry"
+		if pkg.RemoveReason != "" {
+			msg += ": " + pkg.RemoveReason
+		}
+		writeError(w, http.StatusGone, msg)
+		return
+	}
+
 	writeJSON(w, http.StatusOK, pkg)
 }
 

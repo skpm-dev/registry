@@ -174,6 +174,62 @@ func (c *RepoClient) CommitFile(branch, path, content, message string) error {
 	return nil
 }
 
+// ListDirectory returns the paths of all files directly inside a directory.
+// Returns nil if the directory does not exist.
+func (c *RepoClient) ListDirectory(path string) ([]string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", c.owner, c.repo, path)
+
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	c.setHeaders(req)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("could not list directory: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("github returned %d listing %s", resp.StatusCode, path)
+	}
+
+	var items []struct {
+		Path string `json:"path"`
+		Type string `json:"type"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
+		return nil, err
+	}
+
+	var paths []string
+	for _, item := range items {
+		if item.Type == "file" {
+			paths = append(paths, item.Path)
+		}
+	}
+	return paths, nil
+}
+
+// DeleteFile deletes a file on the default branch. Returns nil if the file does not exist.
+func (c *RepoClient) DeleteFile(path, message string) error {
+	sha, err := c.GetFileSHA(path)
+	if err != nil {
+		return err
+	}
+	if sha == "" {
+		return nil
+	}
+
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", c.owner, c.repo, path)
+	body := map[string]string{
+		"message": message,
+		"sha":     sha,
+	}
+	return c.doRequest(http.MethodDelete, url, body, http.StatusOK)
+}
+
 // OpenPR opens a pull request from branch into base.
 func (c *RepoClient) OpenPR(branch, base, title, body string) (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls", c.owner, c.repo)

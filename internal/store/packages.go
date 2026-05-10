@@ -8,6 +8,42 @@ import (
 	"github.com/skpm-dev/registry/internal/models"
 )
 
+// RemoveFromIndex removes a package entry from the index by name.
+func RemoveFromIndex(index *Index, name string) *Index {
+	kept := make([]models.PackageSummary, 0, len(index.Packages))
+	for _, p := range index.Packages {
+		if p.Name != name {
+			kept = append(kept, p)
+		}
+	}
+	index.Packages = kept
+	return index
+}
+
+// LatestNonYanked returns the highest semver version in the map that is not yanked.
+// Returns "" if every version is yanked.
+func LatestNonYanked(versions map[string]models.VersionEntry) string {
+	best := ""
+	var bestParts [3]int
+	for v, entry := range versions {
+		if entry.Yanked {
+			continue
+		}
+		var major, minor, patch int
+		if n, _ := fmt.Sscanf(v, "%d.%d.%d", &major, &minor, &patch); n != 3 {
+			continue
+		}
+		if best == "" ||
+			major > bestParts[0] ||
+			(major == bestParts[0] && minor > bestParts[1]) ||
+			(major == bestParts[0] && minor == bestParts[1] && patch > bestParts[2]) {
+			bestParts = [3]int{major, minor, patch}
+			best = v
+		}
+	}
+	return best
+}
+
 const rawBase = "https://raw.githubusercontent.com/skpm-dev/registry/main"
 
 type Index struct {

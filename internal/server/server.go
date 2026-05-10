@@ -16,6 +16,8 @@ func New(port string) *http.Server {
 	mux.Handle("POST /publish", publishLimit(http.HandlerFunc(handlers.Publish)))
 	mux.HandleFunc("GET /packages", handlers.ListPackages)
 	mux.HandleFunc("GET /packages/{name}", handlers.GetPackage)
+	mux.HandleFunc("DELETE /packages/{name}", handlers.RemovePackage)
+	mux.HandleFunc("DELETE /packages/{name}/{version}", handlers.YankVersion)
 	mux.HandleFunc("GET /packages/{name}/versions/{version}/files/{filename}", handlers.DownloadFile)
 	mux.HandleFunc("GET /search", handlers.SearchPackages)
 
