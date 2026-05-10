@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/skpm-dev/registry/internal/server"
+	"github.com/skpm-dev/registry/internal/store"
 )
 
 func main() {
@@ -17,6 +18,12 @@ func main() {
 	if os.Getenv("REGISTRY_GITHUB_TOKEN") == "" {
 		log.Fatal("REGISTRY_GITHUB_TOKEN is not set")
 	}
+
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "skpm.db"
+	}
+	store.InitDB(dbPath)
 
 	srv := server.New(port)
 

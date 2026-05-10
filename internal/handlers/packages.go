@@ -31,6 +31,7 @@ func GetPackage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pkg.Downloads = store.GetDownloads(name)
 	writeJSON(w, http.StatusOK, pkg)
 }
 

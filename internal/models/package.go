@@ -21,6 +21,7 @@ type Package struct {
 	Author       string                  `json:"author"`
 	Latest       string                  `json:"latest"`
 	Versions     map[string]VersionEntry `json:"versions"`
+	Downloads    int64                   `json:"downloads"`
 	Removed      bool                    `json:"removed,omitempty"`
 	RemoveReason string                  `json:"remove_reason,omitempty"`
 }
@@ -30,4 +31,5 @@ type PackageSummary struct {
 	Description string `json:"description"`
 	Author      string `json:"author"`
 	Latest      string `json:"latest"`
+	Downloads   int64  `json:"downloads"`
 }

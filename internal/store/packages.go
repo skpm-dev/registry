@@ -100,11 +100,14 @@ func GetIndex() (*Index, error) {
 	return &index, nil
 }
 
-// ListPackages fetches all package summaries from the index.
+// ListPackages fetches all package summaries from the index, with live download counts.
 func ListPackages() ([]models.PackageSummary, error) {
 	index, err := GetIndex()
 	if err != nil {
 		return nil, err
+	}
+	for i, p := range index.Packages {
+		index.Packages[i].Downloads = GetDownloads(p.Name)
 	}
 	return index.Packages, nil
 }
