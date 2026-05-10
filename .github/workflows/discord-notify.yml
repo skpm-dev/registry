@@ -1,0 +1,68 @@
+name: Discord package notification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/*.json"
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Notify Discord for each changed package
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_PACKAGES_WEBHOOK }}
+        run: |
+          changed=$(git diff-tree --no-commit-id -r --name-only HEAD | grep '^packages/.*\.json$' || true)
+          [ -z "$changed" ] && exit 0
+
+          for file in $changed; do
+            pkg=$(cat "$file")
+            name=$(echo "$pkg" | jq -r '.name')
+            description=$(echo "$pkg" | jq -r '.description // "No description"')
+            author=$(echo "$pkg" | jq -r '.author')
+            version=$(echo "$pkg" | jq -r '.latest')
+
+            # Determine new vs updated by checking if this file existed in the previous commit
+            if git show HEAD~1:"$file" > /dev/null 2>&1; then
+              prev_version=$(git show HEAD~1:"$file" | jq -r '.latest')
+              if [ "$prev_version" = "$version" ]; then
+                continue  # metadata-only change, not a version bump
+              fi
+              title="Package updated"
+              color=3447003  # blue
+            else
+              title="New package published"
+              color=5763719  # green
+            fi
+
+            payload=$(jq -n \
+              --arg title "$title" \
+              --arg name "$name" \
+              --arg version "$version" \
+              --arg description "$description" \
+              --arg author "$author" \
+              --argjson color "$color" \
+              '{
+                embeds: [{
+                  title: ($title),
+                  color: $color,
+                  fields: [
+                    { name: "Package", value: $name, inline: true },
+                    { name: "Version", value: $version, inline: true },
+                    { name: "Author", value: $author, inline: true },
+                    { name: "Description", value: $description, inline: false }
+                  ]
+                }]
+              }')
+
+            curl -s -o /dev/null -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -d "$payload" \
+              "$WEBHOOK"
+          done
