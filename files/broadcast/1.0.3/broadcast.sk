@@ -1,0 +1,3 @@
+command broadcast [<string>]:
+    trigger:
+        broadcast "[BC] | %arg-1%"
