@@ -1,8 +1,9 @@
 package models
 
 type FileEntry struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
+	Name   string `json:"name"`
+	URL    string `json:"url"`
+	SHA256 string `json:"sha256"`
 }
 
 type VersionEntry struct {

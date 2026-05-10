@@ -102,6 +102,7 @@ type PublishParams struct {
 	Minecraft   string
 	Addons      map[string]string
 	Filenames   []string
+	Checksums   map[string]string // filename → "sha256:<hex>"
 }
 
 // BuildPackageEntry creates a new package entry or merges a new version into an existing one.
@@ -110,7 +111,7 @@ func BuildPackageEntry(existing *models.Package, p PublishParams) *models.Packag
 		Skript:    p.Skript,
 		Minecraft: p.Minecraft,
 		Addons:    p.Addons,
-		Files:     buildFileEntries(p.Name, p.Version, p.Filenames),
+		Files:     buildFileEntries(p.Name, p.Version, p.Filenames, p.Checksums),
 	}
 
 	if existing == nil {
@@ -128,12 +129,13 @@ func BuildPackageEntry(existing *models.Package, p PublishParams) *models.Packag
 	return existing
 }
 
-func buildFileEntries(packageName, version string, filenames []string) []models.FileEntry {
+func buildFileEntries(packageName, version string, filenames []string, checksums map[string]string) []models.FileEntry {
 	entries := make([]models.FileEntry, len(filenames))
 	for i, name := range filenames {
 		entries[i] = models.FileEntry{
-			Name: name,
-			URL:  fmt.Sprintf("%s/files/%s/%s/%s", rawBase, packageName, version, name),
+			Name:   name,
+			URL:    fmt.Sprintf("%s/files/%s/%s/%s", rawBase, packageName, version, name),
+			SHA256: checksums[name],
 		}
 	}
 	return entries

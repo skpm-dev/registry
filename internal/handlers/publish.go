@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -69,8 +70,11 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filenames := make([]string, 0, len(req.Files))
-	for name := range req.Files {
+	checksums := make(map[string]string, len(req.Files))
+	for name, content := range req.Files {
 		filenames = append(filenames, name)
+		sum := sha256.Sum256([]byte(content))
+		checksums[name] = fmt.Sprintf("sha256:%x", sum)
 	}
 
 	pkg := store.BuildPackageEntry(existing, store.PublishParams{
@@ -82,6 +86,7 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 		Minecraft:   req.Manifest.Minecraft,
 		Addons:      req.Manifest.Addons,
 		Filenames:   filenames,
+		Checksums:   checksums,
 	})
 
 	updatedIndex := store.BuildUpdatedIndex(index, pkg)
