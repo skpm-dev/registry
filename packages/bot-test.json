@@ -1,0 +1,20 @@
+{
+  "name": "bot-test",
+  "description": "Testing bot token",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "main.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/bot-test/1.0.0/main.sk",
+          "sha256": "sha256:3ad1f084a7de6587e5d6d795d699559e3d193ec3393843d91b9591e0ca8109d1"
+        }
+      ]
+    }
+  }
+}
