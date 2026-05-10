@@ -42,11 +42,15 @@ var allowedOrigins = map[string]bool{
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if allowedOrigins[origin] {
+		// Read-only endpoints are public API — allow any origin.
+		// Mutating endpoints (publish, admin delete) restrict to known origins.
+		if r.Method == http.MethodGet || r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+		} else if allowedOrigins[origin] {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Vary", "Origin")
 		}
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
