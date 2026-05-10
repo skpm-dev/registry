@@ -24,6 +24,12 @@
       "description": "A short description of your package",
       "author": "adammcgrogan",
       "latest": "1.0.0"
+    },
+    {
+      "name": "test",
+      "description": "test",
+      "author": "adammcgrogan",
+      "latest": "1.0.0"
     }
   ]
 }
