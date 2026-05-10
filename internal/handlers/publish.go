@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -73,8 +72,7 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 	checksums := make(map[string]string, len(req.Files))
 	for name, content := range req.Files {
 		filenames = append(filenames, name)
-		sum := sha256.Sum256([]byte(content))
-		checksums[name] = fmt.Sprintf("sha256:%x", sum)
+		checksums[name] = computeChecksum(content)
 	}
 
 	pkg := store.BuildPackageEntry(existing, store.PublishParams{
