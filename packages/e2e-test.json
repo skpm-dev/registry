@@ -1,0 +1,19 @@
+{
+  "name": "e2e-test",
+  "description": "Dedicated package for skpm end-to-end tests",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.21",
+      "addons": {},
+      "files": [
+        {
+          "name": "hello.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/e2e-test/1.0.0/hello.sk"
+        }
+      ]
+    }
+  }
+}
