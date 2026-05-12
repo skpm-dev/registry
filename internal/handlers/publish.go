@@ -29,12 +29,13 @@ type publishRequest struct {
 }
 
 type publishManifest struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Version     string            `json:"version"`
-	Skript      string            `json:"skript"`
-	Minecraft   string            `json:"minecraft"`
-	Addons      map[string]string `json:"addons"`
+	Name         string            `json:"name"`
+	Description  string            `json:"description"`
+	Version      string            `json:"version"`
+	Skript       string            `json:"skript"`
+	Minecraft    string            `json:"minecraft"`
+	Addons       map[string]string `json:"addons"`
+	Dependencies map[string]string `json:"dependencies"`
 }
 
 func Publish(w http.ResponseWriter, r *http.Request) {
@@ -89,15 +90,16 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pkg := store.BuildPackageEntry(existing, store.PublishParams{
-		Name:        req.Manifest.Name,
-		Description: req.Manifest.Description,
-		Author:      user.Login,
-		Version:     req.Manifest.Version,
-		Skript:      req.Manifest.Skript,
-		Minecraft:   req.Manifest.Minecraft,
-		Addons:      req.Manifest.Addons,
-		Filenames:   filenames,
-		Checksums:   checksums,
+		Name:         req.Manifest.Name,
+		Description:  req.Manifest.Description,
+		Author:       user.Login,
+		Version:      req.Manifest.Version,
+		Skript:       req.Manifest.Skript,
+		Minecraft:    req.Manifest.Minecraft,
+		Addons:       req.Manifest.Addons,
+		Dependencies: req.Manifest.Dependencies,
+		Filenames:    filenames,
+		Checksums:    checksums,
 	})
 
 	updatedIndex := store.BuildUpdatedIndex(index, pkg)

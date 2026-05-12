@@ -7,13 +7,14 @@ type FileEntry struct {
 }
 
 type VersionEntry struct {
-	Skript     string            `json:"skript"`
-	Minecraft  string            `json:"minecraft"`
-	Addons     map[string]string `json:"addons"`
-	Files      []FileEntry       `json:"files"`
-	Downloads  int64             `json:"downloads"`
-	Yanked     bool              `json:"yanked,omitempty"`
-	YankReason string            `json:"yank_reason,omitempty"`
+	Skript       string            `json:"skript"`
+	Minecraft    string            `json:"minecraft"`
+	Addons       map[string]string `json:"addons"`
+	Dependencies map[string]string `json:"dependencies,omitempty"`
+	Files        []FileEntry       `json:"files"`
+	Downloads    int64             `json:"downloads"`
+	Yanked       bool              `json:"yanked,omitempty"`
+	YankReason   string            `json:"yank_reason,omitempty"`
 }
 
 type Package struct {
