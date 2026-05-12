@@ -6,10 +6,19 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/skpm-dev/registry/internal/github"
 	"github.com/skpm-dev/registry/internal/models"
 	"github.com/skpm-dev/registry/internal/store"
+)
+
+var (
+	rePackageName = regexp.MustCompile(`^[a-z][a-z0-9-]{1,38}$`)
+	// safeFilename matches names that cannot escape their directory.
+	reSafeFilename = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$`)
 )
 
 var errVersionConflict = errors.New("version already has an open pull request")
@@ -167,15 +176,29 @@ func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.
 
 func validatePublishRequest(req publishRequest) error {
 	m := req.Manifest
-	switch {
-	case m.Name == "":
+
+	if m.Name == "" {
 		return fmt.Errorf("manifest missing name")
-	case m.Version == "":
+	}
+	if !rePackageName.MatchString(m.Name) {
+		return fmt.Errorf("invalid package name %q: must match ^[a-z][a-z0-9-]{1,38}$", m.Name)
+	}
+	if m.Version == "" {
 		return fmt.Errorf("manifest missing version")
-	case m.Description == "":
+	}
+	if _, err := semver.NewVersion(m.Version); err != nil {
+		return fmt.Errorf("invalid version %q: must be a valid semver string", m.Version)
+	}
+	if m.Description == "" {
 		return fmt.Errorf("manifest missing description")
-	case len(req.Files) == 0:
+	}
+	if len(req.Files) == 0 {
 		return fmt.Errorf("no files provided")
+	}
+	for filename := range req.Files {
+		if !reSafeFilename.MatchString(filename) || strings.Contains(filename, "..") {
+			return fmt.Errorf("invalid filename %q: must match ^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$ and contain no path separators", filename)
+		}
 	}
 	return nil
 }

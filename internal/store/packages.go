@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/skpm-dev/registry/internal/models"
 )
 
@@ -23,21 +25,18 @@ func RemoveFromIndex(index *Index, name string) *Index {
 // LatestNonYanked returns the highest semver version in the map that is not yanked.
 // Returns "" if every version is yanked.
 func LatestNonYanked(versions map[string]models.VersionEntry) string {
+	var bestSV *semver.Version
 	best := ""
-	var bestParts [3]int
 	for v, entry := range versions {
 		if entry.Yanked {
 			continue
 		}
-		var major, minor, patch int
-		if n, _ := fmt.Sscanf(v, "%d.%d.%d", &major, &minor, &patch); n != 3 {
+		sv, err := semver.NewVersion(v)
+		if err != nil {
 			continue
 		}
-		if best == "" ||
-			major > bestParts[0] ||
-			(major == bestParts[0] && minor > bestParts[1]) ||
-			(major == bestParts[0] && minor == bestParts[1] && patch > bestParts[2]) {
-			bestParts = [3]int{major, minor, patch}
+		if bestSV == nil || sv.GreaterThan(bestSV) {
+			bestSV = sv
 			best = v
 		}
 	}
@@ -47,8 +46,19 @@ func LatestNonYanked(versions map[string]models.VersionEntry) string {
 const rawBase = "https://raw.githubusercontent.com/skpm-dev/registry/main"
 
 type Index struct {
-	Version  string                   `json:"version"`
-	Packages []models.PackageSummary  `json:"packages"`
+	Version  string                  `json:"version"`
+	Packages []models.PackageSummary `json:"packages"`
+}
+
+func githubGet(url string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if tok := os.Getenv("REGISTRY_GITHUB_TOKEN"); tok != "" {
+		req.Header.Set("Authorization", "Bearer "+tok)
+	}
+	return http.DefaultClient.Do(req)
 }
 
 // GetPackage fetches a package entry from the registry repo on GitHub.
@@ -56,7 +66,7 @@ type Index struct {
 func GetPackage(name string) (*models.Package, error) {
 	url := fmt.Sprintf("%s/packages/%s.json", rawBase, name)
 
-	resp, err := http.Get(url)
+	resp, err := githubGet(url)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach registry: %w", err)
 	}
@@ -82,7 +92,7 @@ func GetPackage(name string) (*models.Package, error) {
 func GetIndex() (*Index, error) {
 	url := fmt.Sprintf("%s/index.json", rawBase)
 
-	resp, err := http.Get(url)
+	resp, err := githubGet(url)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach registry: %w", err)
 	}
@@ -163,8 +173,14 @@ func BuildPackageEntry(existing *models.Package, p PublishParams) *models.Packag
 		}
 	}
 
-	existing.Latest = p.Version
 	existing.Versions[p.Version] = versionEntry
+	// Only advance Latest if the new version is strictly greater, so a
+	// backport publish cannot roll users back to an older version.
+	newSV, newErr := semver.NewVersion(p.Version)
+	curSV, curErr := semver.NewVersion(existing.Latest)
+	if newErr == nil && (curErr != nil || newSV.GreaterThan(curSV)) {
+		existing.Latest = p.Version
+	}
 	return existing
 }
 
