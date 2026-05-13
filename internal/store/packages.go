@@ -3,8 +3,10 @@ package store
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/skpm-dev/registry/internal/models"
@@ -50,15 +52,53 @@ type Index struct {
 	Packages []models.PackageSummary `json:"packages"`
 }
 
-func githubGet(url string) (*http.Response, error) {
+type cacheEntry struct {
+	etag string
+	body []byte
+}
+
+var githubCache sync.Map // url → cacheEntry
+
+// cachedFetch fetches url with ETag-based conditional GET. On 304 it returns
+// the cached body. On 200 it updates the cache if the response carries an ETag.
+// Returns the response body bytes and HTTP status code.
+func cachedFetch(url string) ([]byte, int, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if tok := os.Getenv("REGISTRY_GITHUB_TOKEN"); tok != "" {
 		req.Header.Set("Authorization", "Bearer "+tok)
 	}
-	return http.DefaultClient.Do(req)
+	if v, ok := githubCache.Load(url); ok {
+		req.Header.Set("If-None-Match", v.(cacheEntry).etag)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotModified {
+		if v, ok := githubCache.Load(url); ok {
+			return v.(cacheEntry).body, http.StatusOK, nil
+		}
+		return nil, http.StatusNotModified, fmt.Errorf("got 304 with no cache entry for %s", url)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		if etag := resp.Header.Get("ETag"); etag != "" {
+			githubCache.Store(url, cacheEntry{etag: etag, body: body})
+		}
+	}
+
+	return body, resp.StatusCode, nil
 }
 
 // GetPackage fetches a package entry from the registry repo on GitHub.
@@ -66,25 +106,21 @@ func githubGet(url string) (*http.Response, error) {
 func GetPackage(name string) (*models.Package, error) {
 	url := fmt.Sprintf("%s/packages/%s.json", rawBase, name)
 
-	resp, err := githubGet(url)
+	body, status, err := cachedFetch(url)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach registry: %w", err)
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusNotFound {
+	if status == http.StatusNotFound {
 		return nil, nil
 	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("registry returned %d", resp.StatusCode)
+	if status != http.StatusOK {
+		return nil, fmt.Errorf("registry returned %d", status)
 	}
 
 	var pkg models.Package
-	if err := json.NewDecoder(resp.Body).Decode(&pkg); err != nil {
+	if err := json.Unmarshal(body, &pkg); err != nil {
 		return nil, fmt.Errorf("could not decode package: %w", err)
 	}
-
 	return &pkg, nil
 }
 
@@ -92,21 +128,18 @@ func GetPackage(name string) (*models.Package, error) {
 func GetIndex() (*Index, error) {
 	url := fmt.Sprintf("%s/index.json", rawBase)
 
-	resp, err := githubGet(url)
+	body, status, err := cachedFetch(url)
 	if err != nil {
 		return nil, fmt.Errorf("could not reach registry: %w", err)
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("registry returned %d fetching index", resp.StatusCode)
+	if status != http.StatusOK {
+		return nil, fmt.Errorf("registry returned %d fetching index", status)
 	}
 
 	var index Index
-	if err := json.NewDecoder(resp.Body).Decode(&index); err != nil {
+	if err := json.Unmarshal(body, &index); err != nil {
 		return nil, fmt.Errorf("could not decode index: %w", err)
 	}
-
 	return &index, nil
 }
 

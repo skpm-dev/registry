@@ -202,5 +202,10 @@ func validatePublishRequest(req publishRequest) error {
 			return fmt.Errorf("invalid filename %q: must match ^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$ and contain no path separators", filename)
 		}
 	}
+	for addon, constraint := range m.Addons {
+		if _, err := semver.NewConstraint(constraint); err != nil {
+			return fmt.Errorf("invalid semver constraint for addon %q: %q", addon, constraint)
+		}
+	}
 	return nil
 }
