@@ -70,8 +70,8 @@ func cachedFetch(url string) ([]byte, int, error) {
 	if tok := os.Getenv("REGISTRY_GITHUB_TOKEN"); tok != "" {
 		req.Header.Set("Authorization", "Bearer "+tok)
 	}
-	if v, ok := githubCache.Load(url); ok {
-		req.Header.Set("If-None-Match", v.(cacheEntry).etag)
+	if cached, ok := githubCache.Load(url); ok {
+		req.Header.Set("If-None-Match", cached.(cacheEntry).etag)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
@@ -81,8 +81,8 @@ func cachedFetch(url string) ([]byte, int, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotModified {
-		if v, ok := githubCache.Load(url); ok {
-			return v.(cacheEntry).body, http.StatusOK, nil
+		if cached, ok := githubCache.Load(url); ok {
+			return cached.(cacheEntry).body, http.StatusOK, nil
 		}
 		return nil, http.StatusNotModified, fmt.Errorf("got 304 with no cache entry for %s", url)
 	}
@@ -211,12 +211,25 @@ func BuildPackageEntry(existing *models.Package, p PublishParams) *models.Packag
 	existing.Versions[p.Version] = versionEntry
 	// Only advance Latest if the new version is strictly greater, so a
 	// backport publish cannot roll users back to an older version.
-	newSV, newErr := semver.NewVersion(p.Version)
-	curSV, curErr := semver.NewVersion(existing.Latest)
-	if newErr == nil && (curErr != nil || newSV.GreaterThan(curSV)) {
+	if isNewerVersion(p.Version, existing.Latest) {
 		existing.Latest = p.Version
 	}
 	return existing
+}
+
+// isNewerVersion reports whether candidate is a valid semver that is strictly
+// greater than current. Returns true when current is absent or unparseable,
+// so any valid version beats an empty or corrupt Latest field.
+func isNewerVersion(candidate, current string) bool {
+	newSV, err := semver.NewVersion(candidate)
+	if err != nil {
+		return false
+	}
+	curSV, err := semver.NewVersion(current)
+	if err != nil {
+		return true
+	}
+	return newSV.GreaterThan(curSV)
 }
 
 func buildFileEntries(packageName, version string, filenames []string, checksums map[string]string) []models.FileEntry {

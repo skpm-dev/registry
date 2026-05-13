@@ -9,8 +9,8 @@ import (
 )
 
 type bucket struct {
-	count  int
-	resets time.Time
+	count    int
+	resetsAt time.Time
 }
 
 // RateLimit returns middleware that limits each client IP to limit requests per window.
@@ -24,7 +24,7 @@ func RateLimit(limit int, window time.Duration) func(http.Handler) http.Handler 
 			mu.Lock()
 			now := time.Now()
 			for ip, b := range buckets {
-				if now.After(b.resets) {
+				if now.After(b.resetsAt) {
 					delete(buckets, ip)
 				}
 			}
@@ -39,8 +39,8 @@ func RateLimit(limit int, window time.Duration) func(http.Handler) http.Handler 
 
 			mu.Lock()
 			b, ok := buckets[ip]
-			if !ok || now.After(b.resets) {
-				b = &bucket{count: 0, resets: now.Add(window)}
+			if !ok || now.After(b.resetsAt) {
+				b = &bucket{count: 0, resetsAt: now.Add(window)}
 				buckets[ip] = b
 			}
 			b.count++

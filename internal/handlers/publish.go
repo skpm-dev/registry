@@ -82,12 +82,7 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filenames := make([]string, 0, len(req.Files))
-	checksums := make(map[string]string, len(req.Files))
-	for name, content := range req.Files {
-		filenames = append(filenames, name)
-		checksums[name] = computeChecksum(content)
-	}
+	filenames, checksums := checksumFiles(req.Files)
 
 	pkg := store.BuildPackageEntry(existing, store.PublishParams{
 		Name:         req.Manifest.Name,
@@ -135,9 +130,11 @@ func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.
 
 	branch := fmt.Sprintf("publish/%s-%s", req.Manifest.Name, req.Manifest.Version)
 
-	if open, err := client.HasOpenPR(branch); err != nil {
+	hasOpenPR, err := client.HasOpenPR(branch)
+	if err != nil {
 		return "", fmt.Errorf("could not check open PRs: %w", err)
-	} else if open {
+	}
+	if hasOpenPR {
 		return "", errVersionConflict
 	}
 
@@ -145,12 +142,8 @@ func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.
 		return "", fmt.Errorf("could not create branch: %w", err)
 	}
 
-	for filename, content := range req.Files {
-		path := fmt.Sprintf("files/%s/%s/%s", req.Manifest.Name, req.Manifest.Version, filename)
-		msg := fmt.Sprintf("add %s for %s@%s", filename, req.Manifest.Name, req.Manifest.Version)
-		if err := client.CommitFile(branch, path, content, msg); err != nil {
-			return "", fmt.Errorf("could not commit file %s: %w", filename, err)
-		}
+	if err := commitScriptFiles(client, branch, req.Manifest.Name, req.Manifest.Version, req.Files); err != nil {
+		return "", err
 	}
 
 	pkgJSON, err := marshalIndent(pkg)
@@ -174,6 +167,29 @@ func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.
 	body := fmt.Sprintf("Automated publish request for **%s** version **%s** by @%s.", req.Manifest.Name, req.Manifest.Version, author)
 
 	return client.OpenPR(branch, "main", title, body)
+}
+
+// checksumFiles returns the list of filenames and a map of filename → checksum
+// for the given file contents.
+func checksumFiles(files map[string]string) (filenames []string, checksums map[string]string) {
+	filenames = make([]string, 0, len(files))
+	checksums = make(map[string]string, len(files))
+	for name, content := range files {
+		filenames = append(filenames, name)
+		checksums[name] = computeChecksum(content)
+	}
+	return
+}
+
+func commitScriptFiles(client *github.RepoClient, branch, packageName, version string, files map[string]string) error {
+	for filename, content := range files {
+		path := fmt.Sprintf("files/%s/%s/%s", packageName, version, filename)
+		msg := fmt.Sprintf("add %s for %s@%s", filename, packageName, version)
+		if err := client.CommitFile(branch, path, content, msg); err != nil {
+			return fmt.Errorf("could not commit file %s: %w", filename, err)
+		}
+	}
+	return nil
 }
 
 func validatePublishRequest(req publishRequest) error {

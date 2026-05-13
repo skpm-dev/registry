@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type User struct {
@@ -47,9 +48,10 @@ func ExtractToken(r *http.Request) (string, error) {
 		return "", fmt.Errorf("missing Authorization header")
 	}
 
-	if len(auth) < 8 || auth[:7] != "Bearer " {
+	token, ok := strings.CutPrefix(auth, "Bearer ")
+	if !ok {
 		return "", fmt.Errorf("authorization header must be in format: Bearer <token>")
 	}
 
-	return auth[7:], nil
+	return token, nil
 }
