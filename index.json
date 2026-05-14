@@ -39,7 +39,7 @@
       "name": "welcomer",
       "description": "Configurable join/quit messages with first-join broadcast support",
       "author": "adammcgrogan",
-      "latest": "1.0.0",
+      "latest": "1.0.1",
       "downloads": 0
     }
   ]
