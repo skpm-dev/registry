@@ -1,0 +1,50 @@
+name: Rebuild index.json
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/**"
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild index.json from packages/
+        run: |
+          python3 - <<'EOF'
+          import json, os, glob
+
+          packages = []
+          for path in sorted(glob.glob("packages/*.json")):
+              with open(path) as f:
+                  pkg = json.load(f)
+              if pkg.get("removed"):
+                  continue
+              latest = pkg.get("latest")
+              if not latest:
+                  continue
+              ver = pkg["versions"].get(latest, {})
+              packages.append({
+                  "name": pkg["name"],
+                  "description": pkg.get("description", ""),
+                  "author": pkg.get("author", ""),
+                  "latest": latest,
+                  "downloads": pkg.get("downloads", 0),
+              })
+
+          with open("index.json", "w") as f:
+              json.dump({"packages": packages}, f, indent=2)
+              f.write("\n")
+          print(f"Wrote {len(packages)} packages to index.json")
+          EOF
+
+      - name: Commit updated index.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          git diff --cached --quiet || git commit -m "rebuild index.json"
+          git push

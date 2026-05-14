@@ -76,12 +76,6 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	index, err := store.GetIndex()
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not fetch registry index")
-		return
-	}
-
 	filenames, checksums := checksumFiles(req.Files)
 
 	pkg := store.BuildPackageEntry(existing, store.PublishParams{
@@ -97,9 +91,7 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 		Checksums:    checksums,
 	})
 
-	updatedIndex := store.BuildUpdatedIndex(index, pkg)
-
-	prURL, err := openPublishPR(req, pkg, updatedIndex, user.Login)
+	prURL, err := openPublishPR(req, pkg, user.Login)
 	if err != nil {
 		if errors.Is(err, errVersionConflict) {
 			writeError(w, http.StatusConflict, fmt.Sprintf("version %s already has an open pull request — bump your version and try again", req.Manifest.Version))
@@ -115,7 +107,7 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.Index, author string) (string, error) {
+func openPublishPR(req publishRequest, pkg *models.Package, author string) (string, error) {
 	registryToken := os.Getenv("REGISTRY_GITHUB_TOKEN")
 	if registryToken == "" {
 		return "", fmt.Errorf("REGISTRY_GITHUB_TOKEN is not set")
@@ -153,14 +145,6 @@ func openPublishPR(req publishRequest, pkg *models.Package, updatedIndex *store.
 	pkgPath := fmt.Sprintf("packages/%s.json", req.Manifest.Name)
 	if err := client.CommitFile(branch, pkgPath, pkgJSON, fmt.Sprintf("update packages/%s.json", req.Manifest.Name)); err != nil {
 		return "", fmt.Errorf("could not commit package entry: %w", err)
-	}
-
-	indexJSON, err := marshalIndent(updatedIndex)
-	if err != nil {
-		return "", err
-	}
-	if err := client.CommitFile(branch, "index.json", indexJSON, "update index.json"); err != nil {
-		return "", fmt.Errorf("could not commit index: %w", err)
 	}
 
 	title := fmt.Sprintf("publish %s@%s by %s", req.Manifest.Name, req.Manifest.Version, author)
