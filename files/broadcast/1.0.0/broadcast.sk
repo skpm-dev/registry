@@ -1,3 +1,0 @@
-command broadcast [string]:
-    trigger:
-        broadcast arg-1
