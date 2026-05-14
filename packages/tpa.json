@@ -1,0 +1,22 @@
+{
+  "name": "tpa",
+  "description": "Player-to-player teleport requests with configurable timeout and delay",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "tpa.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/tpa/1.0.0/tpa.sk",
+          "sha256": "sha256:2da0b05f236f8f0800ef457b2dbd5c5e00b65dac83cadaed65114d9ec22c54e9"
+        }
+      ],
+      "downloads": 0
+    }
+  },
+  "downloads": 0
+}

@@ -1,0 +1,48 @@
+options:
+    request-timeout: 30 seconds
+    teleport-delay: 3 seconds
+    no-permission: &cYou don't have permission to do that.
+
+command /tpa <player>:
+    executable by: players
+    trigger:
+        if arg-1 is player:
+            send "&cYou cannot send a teleport request to yourself."
+            stop
+        set {_target} to arg-1
+        set {tpa.request::%uuid of {_target}%} to player
+        send "&aTeleport request sent to &e%{_target}%&a. Expires in &e{@request-timeout}&a."
+        send "&e%player% &awants to teleport to you. Type &a/tpaccept &7or &c/tpdeny&7." to {_target}
+        wait {@request-timeout}
+        if {tpa.request::%uuid of {_target}%} is player:
+            delete {tpa.request::%uuid of {_target}%}
+            send "&cYour teleport request to &e%{_target}%&c expired." to player
+            send "&cThe teleport request from &e%player%&c expired." to {_target}
+
+command /tpaccept:
+    executable by: players
+    trigger:
+        if {tpa.request::%uuid of player%} is not set:
+            send "&cYou have no pending teleport request."
+            stop
+        set {_requester} to {tpa.request::%uuid of player%}
+        delete {tpa.request::%uuid of player%}
+        send "&e%player% &aaccepted your request. Teleporting in &e{@teleport-delay}&a..." to {_requester}
+        send "&aTeleporting to &e%player%&a in &e{@teleport-delay}&a..."
+        wait {@teleport-delay}
+        if {_requester} is online:
+            teleport {_requester} to player
+            send "&aTeleported to &e%player%&a!" to {_requester}
+        else:
+            send "&c%{_requester}% &cwent offline before you could teleport."
+
+command /tpdeny:
+    executable by: players
+    trigger:
+        if {tpa.request::%uuid of player%} is not set:
+            send "&cYou have no pending teleport request."
+            stop
+        set {_requester} to {tpa.request::%uuid of player%}
+        delete {tpa.request::%uuid of player%}
+        send "&e%player% &cdenied your teleport request." to {_requester}
+        send "&cDenied the teleport request from &e%{_requester}%&c."
