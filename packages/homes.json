@@ -1,0 +1,22 @@
+{
+  "name": "homes",
+  "description": "Per-player named home system with configurable home limit",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "homes.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/homes/1.0.0/homes.sk",
+          "sha256": "sha256:e13df1ae309f4b827befc888acaa0c8317863bd10a28ce20d874802085ffa19a"
+        }
+      ],
+      "downloads": 0
+    }
+  },
+  "downloads": 0
+}
