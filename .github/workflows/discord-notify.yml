@@ -22,6 +22,8 @@ jobs:
           [ -z "$changed" ] && exit 0
 
           for file in $changed; do
+            # skip deleted files
+            [ -f "$file" ] || continue
             pkg=$(cat "$file")
             name=$(echo "$pkg" | jq -r '.name')
             description=$(echo "$pkg" | jq -r '.description // "No description"')
