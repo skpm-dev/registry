@@ -1,0 +1,50 @@
+options:
+    cooldown-starter: 24 hours
+    cooldown-tools: 1 hour
+    no-permission: &cYou don't have permission to use this kit.
+    unknown-kit: &cKit &e%arg-1%&c not found. Use &e/kit&c for a list.
+
+command /kit [<text>]:
+    executable by: players
+    trigger:
+        if arg-1 is not set or arg-1 is "list":
+            send "&6Available kits: &estarter&6, &etools"
+            stop
+
+        if arg-1 is "starter":
+            if player doesn't have permission "kit.starter":
+                send {@no-permission}
+                stop
+            if {kit.used.starter::%uuid of player%} is set:
+                set {_elapsed} to difference between {kit.used.starter::%uuid of player%} and now
+                if {_elapsed} < {@cooldown-starter}:
+                    set {_remaining} to {@cooldown-starter} - {_elapsed}
+                    send "&cKit &estarter&c is on cooldown for &e%{_remaining}%&c."
+                    stop
+            give player 1 iron sword named "&eStarter Sword"
+            give player 1 iron pickaxe named "&eStarter Pickaxe"
+            give player 1 iron axe named "&eStarter Axe"
+            give player 1 iron shovel named "&eStarter Shovel"
+            give player 1 iron chestplate named "&eStarter Chestplate"
+            give player 64 cooked beef
+            set {kit.used.starter::%uuid of player%} to now
+            send "&aYou claimed the &estarter&a kit!"
+
+        else if arg-1 is "tools":
+            if player doesn't have permission "kit.tools":
+                send {@no-permission}
+                stop
+            if {kit.used.tools::%uuid of player%} is set:
+                set {_elapsed} to difference between {kit.used.tools::%uuid of player%} and now
+                if {_elapsed} < {@cooldown-tools}:
+                    set {_remaining} to {@cooldown-tools} - {_elapsed}
+                    send "&cKit &etools&c is on cooldown for &e%{_remaining}%&c."
+                    stop
+            give player 1 diamond pickaxe named "&bPower Pick"
+            give player 1 diamond axe named "&bPower Axe"
+            give player 1 diamond shovel named "&bPower Shovel"
+            set {kit.used.tools::%uuid of player%} to now
+            send "&aYou claimed the &etools&a kit!"
+
+        else:
+            send {@unknown-kit}
