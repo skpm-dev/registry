@@ -1,0 +1,13 @@
+options:
+    join-message: "&a%player% joined the server."
+    quit-message: "&c%player% left the server."
+    first-join-message: "&6Welcome to the server for the first time, %player%!"
+
+on join:
+    set join message to colored {@join-message}
+    if {welcomer.joined::%uuid of player%} is not set:
+        set {welcomer.joined::%uuid of player%} to true
+        broadcast colored {@first-join-message}
+
+on quit:
+    set quit message to colored {@quit-message}
