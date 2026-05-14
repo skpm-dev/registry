@@ -1,10 +1,11 @@
 {
+  "version": "1",
   "packages": [
     {
-      "name": "broadcast",
-      "description": "Easy Broadcast",
-      "author": "adammcgrogan",
-      "latest": "1.0.4",
+      "name": "join-message",
+      "description": "A simple join message system for Skript servers",
+      "author": "tarna",
+      "latest": "1.0.0",
       "downloads": 0
     },
     {
@@ -17,41 +18,6 @@
     {
       "name": "homes",
       "description": "Per-player named home system with configurable home limit",
-      "author": "adammcgrogan",
-      "latest": "1.0.0",
-      "downloads": 0
-    },
-    {
-      "name": "join-message",
-      "description": "A simple join message system for Skript servers",
-      "author": "tarna",
-      "latest": "1.0.0",
-      "downloads": 0
-    },
-    {
-      "name": "kit",
-      "description": "Named kits with per-kit permissions and cooldowns",
-      "author": "adammcgrogan",
-      "latest": "1.0.0",
-      "downloads": 0
-    },
-    {
-      "name": "example",
-      "description": "An example package entry for reference",
-      "author": "yourname",
-      "latest": "1.0.0",
-      "downloads": 0
-    },
-    {
-      "name": "spawn",
-      "description": "Set a server spawn point and teleport to it with /spawn",
-      "author": "adammcgrogan",
-      "latest": "1.0.0",
-      "downloads": 0
-    },
-    {
-      "name": "tpa",
-      "description": "Player-to-player teleport requests with configurable timeout and delay",
       "author": "adammcgrogan",
       "latest": "1.0.0",
       "downloads": 0
