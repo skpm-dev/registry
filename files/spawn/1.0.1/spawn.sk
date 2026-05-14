@@ -1,0 +1,22 @@
+options:
+    no-spawn: "&cNo spawn point has been set yet. Ask an admin to run /setspawn."
+    spawn-set: "&aSpawn point updated."
+    teleporting: "&aTeleporting to spawn..."
+    no-permission: "&cYou don't have permission to do that."
+
+command /spawn:
+    executable by: players
+    trigger:
+        if {spawn.location} is not set:
+            send {@no-spawn}
+            stop
+        send {@teleporting}
+        teleport player to {spawn.location}
+
+command /setspawn:
+    executable by: players
+    permission: spawn.set
+    permission message: {@no-permission}
+    trigger:
+        set {spawn.location} to location of player
+        send {@spawn-set}
