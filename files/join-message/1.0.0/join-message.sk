@@ -1,5 +1,0 @@
-options:
-	message: "Welcome to the server, %player%! Enjoy your stay!"
-	
-on join:
-	send {@message} to player
