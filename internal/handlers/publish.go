@@ -76,6 +76,16 @@ func Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if existing != nil {
+		if _, exists := existing.Versions[req.Manifest.Version]; exists {
+			writeError(w, http.StatusConflict, fmt.Sprintf(
+				"version %s of %s already exists — bump your version and try again",
+				req.Manifest.Version, req.Manifest.Name,
+			))
+			return
+		}
+	}
+
 	filenames, checksums := checksumFiles(req.Files)
 
 	pkg := store.BuildPackageEntry(existing, store.PublishParams{

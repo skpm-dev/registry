@@ -119,6 +119,11 @@ func (c *RepoClient) HasOpenPR(branch string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		return false, fmt.Errorf("github returned %d listing PRs: %s", resp.StatusCode, string(b))
+	}
+
 	var prs []struct{}
 	if err := json.NewDecoder(resp.Body).Decode(&prs); err != nil {
 		return false, err

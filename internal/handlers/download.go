@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/skpm-dev/registry/internal/store"
 )
 
@@ -15,6 +16,15 @@ func DownloadFile(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
 	version := r.PathValue("version")
 	filename := r.PathValue("filename")
+
+	if !rePackageName.MatchString(name) || !reSafeFilename.MatchString(filename) {
+		writeError(w, http.StatusBadRequest, "invalid name, version, or filename")
+		return
+	}
+	if _, err := semver.NewVersion(version); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid name, version, or filename")
+		return
+	}
 
 	if yankMessage, yanked := yankMessageFor(name, version); yanked {
 		writeError(w, http.StatusGone, yankMessage)
