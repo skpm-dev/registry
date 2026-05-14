@@ -2,7 +2,7 @@
   "name": "kit",
   "description": "Named kits with per-kit permissions and cooldowns",
   "author": "adammcgrogan",
-  "latest": "1.0.1",
+  "latest": "1.0.2",
   "versions": {
     "1.0.0": {
       "skript": "\u003e=2.7",
@@ -26,6 +26,19 @@
           "name": "kit.sk",
           "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/kit/1.0.1/kit.sk",
           "sha256": "sha256:972edb7ccde74cf48a40f38a67d915363ec84053ddb346186f4d34fdb6f3da1c"
+        }
+      ],
+      "downloads": 0
+    },
+    "1.0.2": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "kit.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/kit/1.0.2/kit.sk",
+          "sha256": "sha256:59326112b0eba3e8f605235416c7fa6259328fe739f789eb7cadd7ae9c70aa23"
         }
       ],
       "downloads": 0
