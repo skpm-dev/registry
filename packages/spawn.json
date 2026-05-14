@@ -1,0 +1,22 @@
+{
+  "name": "spawn",
+  "description": "Set a server spawn point and teleport to it with /spawn",
+  "author": "adammcgrogan",
+  "latest": "1.0.0",
+  "versions": {
+    "1.0.0": {
+      "skript": "\u003e=2.7",
+      "minecraft": "\u003e=1.20",
+      "addons": {},
+      "files": [
+        {
+          "name": "spawn.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/spawn/1.0.0/spawn.sk",
+          "sha256": "sha256:1c498a79b86506562a733d13e3973453c5c142a31b557bc0ec24b49f6119c37b"
+        }
+      ],
+      "downloads": 0
+    }
+  },
+  "downloads": 0
+}
