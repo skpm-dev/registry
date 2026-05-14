@@ -2,17 +2,17 @@
   "version": "1",
   "packages": [
     {
-      "name": "join-message",
-      "description": "A simple join message system for Skript servers",
-      "author": "tarna",
-      "latest": "1.0.0",
-      "downloads": 0
-    },
-    {
       "name": "e2e-test",
       "description": "Dedicated package for skpm end-to-end tests",
       "author": "adammcgrogan",
       "latest": "1.0.0",
+      "downloads": 0
+    },
+    {
+      "name": "broadcast",
+      "description": "Easy Broadcast",
+      "author": "adammcgrogan",
+      "latest": "1.0.4",
       "downloads": 0
     },
     {
