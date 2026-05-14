@@ -28,6 +28,13 @@
       "author": "adammcgrogan",
       "latest": "1.0.0",
       "downloads": 0
+    },
+    {
+      "name": "spawn",
+      "description": "Set a server spawn point and teleport to it with /spawn",
+      "author": "adammcgrogan",
+      "latest": "1.0.0",
+      "downloads": 0
     }
   ]
 }
