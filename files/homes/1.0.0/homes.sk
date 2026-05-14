@@ -1,0 +1,61 @@
+options:
+    max-homes: 3
+    no-permission: &cYou don't have permission to do that.
+    no-home: &cYou have no home named &e%arg-1%&c.
+    no-homes: &cYou have no homes set.
+    max-reached: &cYou have reached your maximum of &e{@max-homes} &chomes.
+
+command /home [<text>]:
+    executable by: players
+    trigger:
+        if arg-1 is not set:
+            set {_name} to "home"
+        else:
+            set {_name} to arg-1
+        if {homes::%uuid of player%::%{_name}%} is not set:
+            send "&cYou have no home named &e%{_name}%&c."
+            stop
+        teleport player to {homes::%uuid of player%::%{_name}%}
+        send "&aTeleported to home &e%{_name}%&a."
+
+command /sethome [<text>]:
+    executable by: players
+    trigger:
+        if arg-1 is not set:
+            set {_name} to "home"
+        else:
+            set {_name} to arg-1
+        if player doesn't have permission "homes.unlimited":
+            if {homes::%uuid of player%::%{_name}%} is not set:
+                if size of {homes::%uuid of player%::*} >= {@max-homes}:
+                    send {@max-reached}
+                    stop
+        set {homes::%uuid of player%::%{_name}%} to location of player
+        send "&aHome &e%{_name}%&a has been set."
+
+command /delhome [<text>]:
+    executable by: players
+    trigger:
+        if arg-1 is not set:
+            set {_name} to "home"
+        else:
+            set {_name} to arg-1
+        if {homes::%uuid of player%::%{_name}%} is not set:
+            send "&cYou have no home named &e%{_name}%&c."
+            stop
+        delete {homes::%uuid of player%::%{_name}%}
+        send "&aHome &e%{_name}%&a has been deleted."
+
+command /homes:
+    executable by: players
+    trigger:
+        if size of {homes::%uuid of player%::*} is 0:
+            send {@no-homes}
+            stop
+        set {_list} to ""
+        loop {homes::%uuid of player%::*}:
+            if {_list} is "":
+                set {_list} to loop-index
+            else:
+                set {_list} to "%{_list}%, %loop-index%"
+        send "&6Your homes (%size of {homes::%uuid of player%::*}%/{@max-homes}): &e%{_list}%"
