@@ -3,6 +3,7 @@ package middleware
 import (
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -57,23 +58,23 @@ func RateLimit(limit int, window time.Duration) func(http.Handler) http.Handler 
 	}
 }
 
+// clientIP returns the request's real client IP. XFF and X-Real-IP headers are
+// only trusted when TRUSTED_PROXY=true, which should only be set when the
+// registry runs behind a known reverse proxy that sets these headers.
 func clientIP(r *http.Request) string {
-	// When running behind a trusted reverse proxy (Railway, Nginx), the real
-	// client IP is in X-Forwarded-For. We take only the first (leftmost) addr,
-	// which is set by the client-facing proxy and cannot be spoofed by the client
-	// adding extra values.
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		// X-Forwarded-For may be "client, proxy1, proxy2"
-		if idx := strings.IndexByte(xff, ','); idx != -1 {
-			xff = xff[:idx]
+	if os.Getenv("TRUSTED_PROXY") == "true" {
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			if idx := strings.IndexByte(xff, ','); idx != -1 {
+				xff = xff[:idx]
+			}
+			xff = strings.TrimSpace(xff)
+			if xff != "" {
+				return xff
+			}
 		}
-		xff = strings.TrimSpace(xff)
-		if xff != "" {
-			return xff
+		if xri := r.Header.Get("X-Real-IP"); xri != "" {
+			return strings.TrimSpace(xri)
 		}
-	}
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return strings.TrimSpace(xri)
 	}
 	addr := r.RemoteAddr
 	if host, _, err := net.SplitHostPort(addr); err == nil {

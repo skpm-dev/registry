@@ -140,7 +140,16 @@ func openPublishPR(req publishRequest, pkg *models.Package, author string) (stri
 		return "", errVersionConflict
 	}
 
+	// Clean up any orphaned branch from a previously failed publish (no open PR).
+	// Do this before CreateBranch so that CreateBranch returning ErrBranchExists
+	// unambiguously means a concurrent publish just claimed the branch (A4).
+	_ = client.DeleteBranch(branch)
+
 	if err := client.CreateBranch(branch, mainSHA); err != nil {
+		if errors.Is(err, github.ErrBranchExists) {
+			// A concurrent publish won the race and already created this branch.
+			return "", errVersionConflict
+		}
 		return "", fmt.Errorf("could not create branch: %w", err)
 	}
 

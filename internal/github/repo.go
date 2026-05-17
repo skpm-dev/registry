@@ -4,10 +4,14 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 )
+
+// ErrBranchExists is returned by CreateBranch when the branch already exists on GitHub.
+var ErrBranchExists = errors.New("branch already exists")
 
 // RepoClient performs GitHub API operations against a specific repository.
 type RepoClient struct {
@@ -85,10 +89,10 @@ func (c *RepoClient) GetBranchSHA(branch string) (string, error) {
 	return ref.Object.SHA, nil
 }
 
-// CreateBranch creates a new branch pointing at fromSHA, deleting it first if it already exists.
+// CreateBranch creates a new branch pointing at fromSHA.
+// Returns ErrBranchExists if the branch already exists on GitHub; callers that
+// want to replace an existing branch should call DeleteBranch first.
 func (c *RepoClient) CreateBranch(name, fromSHA string) error {
-	_ = c.DeleteBranch(name) // ignore error — branch may not exist
-
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs", c.owner, c.repo)
 
 	body := map[string]string{
@@ -96,11 +100,30 @@ func (c *RepoClient) CreateBranch(name, fromSHA string) error {
 		"sha": fromSHA,
 	}
 
-	if err := c.doRequest(http.MethodPost, url, body, http.StatusCreated); err != nil {
-		return fmt.Errorf("could not create branch %s: %w", name, err)
+	data, err := json.Marshal(body)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+	c.setHeaders(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not create branch %s: %w", name, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusCreated {
+		return nil
+	}
+	if resp.StatusCode == http.StatusUnprocessableEntity {
+		return ErrBranchExists
+	}
+
+	b, _ := io.ReadAll(resp.Body)
+	return fmt.Errorf("could not create branch %s: github returned %d: %s", name, resp.StatusCode, string(b))
 }
 
 // HasOpenPR returns true if there is an open pull request for the given branch.
