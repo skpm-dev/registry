@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"math/rand/v2"
 	"net"
 	"net/http"
 	"os"
@@ -15,23 +16,11 @@ type bucket struct {
 }
 
 // RateLimit returns middleware that limits each client IP to limit requests per window.
-// Stale buckets are purged once per window to bound memory growth.
+// Stale buckets are purged lazily on ~1% of requests to avoid a background goroutine
+// that would leak if RateLimit is called multiple times (e.g. in tests).
 func RateLimit(limit int, window time.Duration) func(http.Handler) http.Handler {
 	var mu sync.Mutex
 	buckets := make(map[string]*bucket)
-
-	go func() {
-		for range time.Tick(window) {
-			mu.Lock()
-			now := time.Now()
-			for ip, b := range buckets {
-				if now.After(b.resetsAt) {
-					delete(buckets, ip)
-				}
-			}
-			mu.Unlock()
-		}
-	}()
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +28,14 @@ func RateLimit(limit int, window time.Duration) func(http.Handler) http.Handler 
 			now := time.Now()
 
 			mu.Lock()
+			// Lazy GC: purge expired buckets on ~1% of requests.
+			if rand.IntN(100) == 0 {
+				for ip, b := range buckets {
+					if now.After(b.resetsAt) {
+						delete(buckets, ip)
+					}
+				}
+			}
 			b, ok := buckets[ip]
 			if !ok || now.After(b.resetsAt) {
 				b = &bucket{count: 0, resetsAt: now.Add(window)}

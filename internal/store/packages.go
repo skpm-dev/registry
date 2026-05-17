@@ -57,7 +57,35 @@ type cacheEntry struct {
 	body []byte
 }
 
-var githubCache sync.Map // url → cacheEntry
+// githubCache is a bounded ETag cache. When full, the oldest entries are evicted
+// by clearing the entire map (a cache miss just causes a fresh GitHub fetch).
+type boundedCache struct {
+	mu      sync.Mutex
+	entries map[string]cacheEntry
+	maxSize int
+}
+
+func (c *boundedCache) load(url string) (cacheEntry, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	e, ok := c.entries[url]
+	return e, ok
+}
+
+func (c *boundedCache) store(url string, e cacheEntry) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if _, exists := c.entries[url]; !exists && len(c.entries) >= c.maxSize {
+		// Evict all entries. Cache misses are cheap: one extra GitHub CDN round-trip.
+		c.entries = make(map[string]cacheEntry, c.maxSize)
+	}
+	c.entries[url] = e
+}
+
+var githubCache = &boundedCache{
+	entries: make(map[string]cacheEntry, 128),
+	maxSize: 500,
+}
 
 // cachedFetch fetches url with ETag-based conditional GET. On 304 it returns
 // the cached body. On 200 it updates the cache if the response carries an ETag.
@@ -70,8 +98,8 @@ func cachedFetch(url string) ([]byte, int, error) {
 	if tok := os.Getenv("REGISTRY_GITHUB_TOKEN"); tok != "" {
 		req.Header.Set("Authorization", "Bearer "+tok)
 	}
-	if cached, ok := githubCache.Load(url); ok {
-		req.Header.Set("If-None-Match", cached.(cacheEntry).etag)
+	if cached, ok := githubCache.load(url); ok {
+		req.Header.Set("If-None-Match", cached.etag)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
@@ -81,8 +109,8 @@ func cachedFetch(url string) ([]byte, int, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotModified {
-		if cached, ok := githubCache.Load(url); ok {
-			return cached.(cacheEntry).body, http.StatusOK, nil
+		if cached, ok := githubCache.load(url); ok {
+			return cached.body, http.StatusOK, nil
 		}
 		return nil, http.StatusNotModified, fmt.Errorf("got 304 with no cache entry for %s", url)
 	}
@@ -94,7 +122,7 @@ func cachedFetch(url string) ([]byte, int, error) {
 
 	if resp.StatusCode == http.StatusOK {
 		if etag := resp.Header.Get("ETag"); etag != "" {
-			githubCache.Store(url, cacheEntry{etag: etag, body: body})
+			githubCache.store(url, cacheEntry{etag: etag, body: body})
 		}
 	}
 
@@ -155,25 +183,6 @@ func ListPackages() ([]models.PackageSummary, error) {
 	return index.Packages, nil
 }
 
-// BuildUpdatedIndex returns the index with the package added or updated.
-func BuildUpdatedIndex(index *Index, pkg *models.Package) *Index {
-	summary := models.PackageSummary{
-		Name:        pkg.Name,
-		Description: pkg.Description,
-		Author:      pkg.Author,
-		Latest:      pkg.Latest,
-	}
-
-	for i, p := range index.Packages {
-		if p.Name == pkg.Name {
-			index.Packages[i] = summary
-			return index
-		}
-	}
-
-	index.Packages = append(index.Packages, summary)
-	return index
-}
 
 type PublishParams struct {
 	Name         string

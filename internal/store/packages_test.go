@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/skpm-dev/registry/internal/models"
 	"github.com/skpm-dev/registry/internal/store"
 )
 
@@ -84,54 +83,3 @@ func TestBuildPackageEntry_mergesNewVersion(t *testing.T) {
 	}
 }
 
-func TestBuildUpdatedIndex_addsNewPackage(t *testing.T) {
-	index := &store.Index{Version: "1", Packages: []models.PackageSummary{}}
-	pkg := store.BuildPackageEntry(nil, baseParams())
-
-	updated := store.BuildUpdatedIndex(index, pkg)
-
-	if len(updated.Packages) != 1 {
-		t.Fatalf("packages: got %d, want 1", len(updated.Packages))
-	}
-	if updated.Packages[0].Name != "economy" {
-		t.Errorf("name: got %q", updated.Packages[0].Name)
-	}
-}
-
-func TestBuildUpdatedIndex_updatesExisting(t *testing.T) {
-	index := &store.Index{
-		Version: "1",
-		Packages: []models.PackageSummary{
-			{Name: "economy", Latest: "1.0.0", Author: "testuser"},
-		},
-	}
-
-	params := baseParams()
-	params.Version = "1.0.1"
-	pkg := store.BuildPackageEntry(nil, params)
-
-	updated := store.BuildUpdatedIndex(index, pkg)
-
-	if len(updated.Packages) != 1 {
-		t.Fatalf("packages: got %d, want 1", len(updated.Packages))
-	}
-	if updated.Packages[0].Latest != "1.0.1" {
-		t.Errorf("latest: got %q, want 1.0.1", updated.Packages[0].Latest)
-	}
-}
-
-func TestBuildUpdatedIndex_preservesOtherPackages(t *testing.T) {
-	index := &store.Index{
-		Version: "1",
-		Packages: []models.PackageSummary{
-			{Name: "other-package", Latest: "2.0.0"},
-		},
-	}
-	pkg := store.BuildPackageEntry(nil, baseParams())
-
-	updated := store.BuildUpdatedIndex(index, pkg)
-
-	if len(updated.Packages) != 2 {
-		t.Fatalf("packages: got %d, want 2", len(updated.Packages))
-	}
-}
