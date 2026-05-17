@@ -87,43 +87,6 @@ registry/
 
 ---
 
-## Self-hosting
-
-### Prerequisites
-
-- Go 1.21+
-- A PostgreSQL database
-- A GitHub PAT with **write access** to a repository that will serve as the data store
-
-### Environment variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `REGISTRY_GITHUB_TOKEN` | **Yes** | GitHub PAT with repo write access — used to create branches, commit files, and open PRs |
-| `DATABASE_URL` | **Yes** | PostgreSQL connection string (e.g. `postgres://user:pass@host/db`) |
-| `REGISTRY_ADMIN_TOKEN` | No | Static bearer token required for `DELETE` admin endpoints |
-| `REGISTRY_BASE_URL` | No | Override file URL prefix (default: `https://registry.skpm.org`) |
-| `PORT` | No | HTTP listen port (default: `8080`) |
-| `TRUSTED_PROXY` | No | Set to `true` to trust `X-Forwarded-For` / `X-Real-IP` headers when running behind a reverse proxy |
-
-### Run
-
-```bash
-export REGISTRY_GITHUB_TOKEN=ghp_...
-export DATABASE_URL=postgres://...
-
-go run .
-```
-
-### Build
-
-```bash
-go build -o registry .
-./registry
-```
-
----
-
 ## Related
 
 - **[skpm-dev/cli](https://github.com/skpm-dev/cli)** — CLI tool for publishing packages
