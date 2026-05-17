@@ -19,8 +19,6 @@ Package metadata and script files live in this repository as version-controlled 
 | `GET` | `/packages/:name/versions/:version/files/:file` | Download a script file (counts the download, redirects to raw GitHub) |
 | `GET` | `/search?q=` | Search packages by name or description |
 | `POST` | `/publish` | Publish a new package or version (requires `Authorization: Bearer <GitHub PAT>`) |
-| `DELETE` | `/packages/:name` | Admin: hard-remove a package |
-| `DELETE` | `/packages/:name/:version` | Admin: yank a specific version |
 
 **Rate limits:** 10 req/min per IP on `POST /publish`; 120 req/min per IP globally.
 
