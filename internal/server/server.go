@@ -21,6 +21,11 @@ func New(port string) *http.Server {
 	mux.HandleFunc("GET /packages/{name}/versions/{version}/files/{filename}", handlers.DownloadFile)
 	mux.HandleFunc("GET /search", handlers.SearchPackages)
 
+	// 3rd-party integration endpoints — require a registered API key.
+	apiKeyAuth := middleware.RequireAPIKey
+	mux.Handle("POST /v1/packages", publishLimit(apiKeyAuth(http.HandlerFunc(handlers.PublishWithKey))))
+	mux.Handle("GET /v1/packages/{name}/versions/{version}/files/{filename}", apiKeyAuth(http.HandlerFunc(handlers.GetFileContent)))
+
 	globalLimit := middleware.RateLimit(120, time.Minute)
 	return &http.Server{
 		Addr:    fmt.Sprintf(":%s", port),

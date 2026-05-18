@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/skpm-dev/registry/internal/middleware"
 	"github.com/skpm-dev/registry/internal/server"
 	"github.com/skpm-dev/registry/internal/store"
 )
@@ -22,6 +23,7 @@ func main() {
 		log.Fatal("DATABASE_URL is not set")
 	}
 
+	middleware.LoadAPIKeys()
 	store.InitDB()
 
 	srv := server.New(port)
