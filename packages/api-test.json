@@ -1,0 +1,22 @@
+{
+  "name": "api-test",
+  "description": "integration API test package",
+  "author": "adammcgrogan",
+  "latest": "1.0.1",
+  "versions": {
+    "1.0.1": {
+      "skript": "2.9",
+      "minecraft": "1.21",
+      "addons": null,
+      "files": [
+        {
+          "name": "api-test.sk",
+          "url": "https://raw.githubusercontent.com/skpm-dev/registry/main/files/api-test/1.0.1/api-test.sk",
+          "sha256": "sha256:a95bfd92b228f99a317e11f53f3065e35a5f2e7924796d17607830d1878a7523"
+        }
+      ],
+      "downloads": 0
+    }
+  },
+  "downloads": 0
+}
