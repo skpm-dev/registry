@@ -24,6 +24,60 @@ Package metadata and script files live in this repository as version-controlled 
 
 ---
 
+## Integration API
+
+Third-party services can publish packages and fetch file contents via a dedicated API. All integration endpoints require an API key.
+
+To get an API key, contact **adammcgrogan2005@gmail.com**.
+
+### Authentication
+
+Include your API key in every request:
+
+```
+Authorization: Bearer <api-key>
+```
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/v1/packages` | Publish a package (see below) |
+| `GET` | `/v1/packages/:name/versions/:version/files/:file` | Fetch raw file content inline |
+
+### Publish a package
+
+`POST /v1/packages`
+
+Requires two headers:
+- `Authorization: Bearer <api-key>` — your integration API key
+- `X-GitHub-Token: <github-pat>` — a GitHub PAT with `read:user` scope, used to verify your identity as the package author
+
+```json
+{
+  "manifest": {
+    "name": "my-package",
+    "version": "1.0.0",
+    "description": "A short description",
+    "skript": "2.9",
+    "minecraft": "1.21"
+  },
+  "files": {
+    "my-package.sk": "# script content here"
+  }
+}
+```
+
+Returns `201` with a pull request URL on success. The package goes live once a maintainer merges the PR.
+
+### Fetch file content
+
+`GET /v1/packages/:name/versions/:version/files/:file`
+
+Returns the raw script file content as `text/plain`. Also counts the download.
+
+---
+
 ## Package format
 
 Packages are stored as `packages/<name>.json` in this repository:
