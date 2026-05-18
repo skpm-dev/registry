@@ -28,7 +28,7 @@ Package metadata and script files live in this repository as version-controlled 
 
 Third-party services can publish packages and fetch file contents via a dedicated API. All integration endpoints require an API key.
 
-To get an API key, contact **adammcgrogan2005@gmail.com**.
+To get an API key, open an issue on this repository.
 
 ### Authentication
 
