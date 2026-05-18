@@ -19,10 +19,6 @@ func main() {
 	if os.Getenv("REGISTRY_GITHUB_TOKEN") == "" {
 		log.Fatal("REGISTRY_GITHUB_TOKEN is not set")
 	}
-	if os.Getenv("DATABASE_URL") == "" {
-		log.Fatal("DATABASE_URL is not set")
-	}
-
 	middleware.LoadAPIKeys()
 	store.InitDB()
 

@@ -13,7 +13,8 @@ var db *sql.DB
 func InitDB() {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		log.Fatal("DATABASE_URL is not set")
+		log.Println("DATABASE_URL not set — download counting disabled")
+		return
 	}
 
 	var err error
