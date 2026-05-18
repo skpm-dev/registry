@@ -5,7 +5,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
+
+// githubOwner returns the GitHub org/user that owns the registry repo.
+// Defaults to "skpm-dev"; override with REGISTRY_GITHUB_OWNER for test environments.
+func githubOwner() string {
+	if v := os.Getenv("REGISTRY_GITHUB_OWNER"); v != "" {
+		return v
+	}
+	return "skpm-dev"
+}
+
+// githubRepo returns the GitHub repository name for registry data.
+// Defaults to "registry"; override with REGISTRY_GITHUB_REPO for test environments.
+func githubRepo() string {
+	if v := os.Getenv("REGISTRY_GITHUB_REPO"); v != "" {
+		return v
+	}
+	return "registry"
+}
 
 func computeChecksum(content string) string {
 	sum := sha256.Sum256([]byte(content))

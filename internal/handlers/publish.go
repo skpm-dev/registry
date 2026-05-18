@@ -123,7 +123,7 @@ func openPublishPR(req publishRequest, pkg *models.Package, author string) (stri
 		return "", fmt.Errorf("REGISTRY_GITHUB_TOKEN is not set")
 	}
 
-	client := github.NewRepoClient(registryToken, "skpm-dev", "registry")
+	client := github.NewRepoClient(registryToken, githubOwner(), githubRepo())
 
 	mainSHA, err := client.GetBranchSHA("main")
 	if err != nil {

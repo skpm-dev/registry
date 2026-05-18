@@ -186,5 +186,5 @@ func removeFromIndex(client *github.RepoClient, packageName string) error {
 }
 
 func adminRepoClient() *github.RepoClient {
-	return github.NewRepoClient(os.Getenv("REGISTRY_GITHUB_TOKEN"), "skpm-dev", "registry")
+	return github.NewRepoClient(os.Getenv("REGISTRY_GITHUB_TOKEN"), githubOwner(), githubRepo())
 }
